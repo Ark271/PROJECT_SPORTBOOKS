@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/entities.dart'; // dùng Address & Book
-import '../../data/datasources/memory.dart'; // dùng MemoryDataSource cho catalog/wishlist
+import '../../domain/entities/entities.dart'; // dùng Address, Book, CartItem, Order
+import '../../data/datasources/memory.dart'; // MemoryDataSource cho catalog/wishlist/cart/orders
 
-/// Item thông báo tối giản cho UI
+/// Model thông báo tối giản dùng chung
 class AppNotification {
   final String id;
   final String title;
@@ -77,9 +77,12 @@ class ProfileNotiState extends ChangeNotifier {
   }
 
   // ===== LOAD / PERSIST (tùy chọn) =====
-  /// Gọi lúc khởi động app để nạp Address/Noti đã lưu (nếu bạn có cơ chế lưu).
   Future<void> loadInitial() async {
     try {
+      // _address = await ds.loadAddress();
+      // _notifications
+      //   ..clear()
+      //   ..addAll(await ds.loadNotifications());
       notifyListeners();
     } catch (_) {}
   }
@@ -157,6 +160,142 @@ class CatalogWishlistSettingsState extends ChangeNotifier {
 
       // SETTINGS (nếu bạn lưu ThemeMode ở ds thì load ở đây)
       // _themeMode = await ds.loadThemeMode() ?? ThemeMode.light;
+
+      notifyListeners();
+    } catch (_) {}
+  }
+}
+
+class CartCheckoutOrdersState extends ChangeNotifier {
+  final MemoryDataSource ds;
+
+  CartCheckoutOrdersState({MemoryDataSource? dataSource})
+    : ds = dataSource ?? MemoryDataSource();
+
+  // ---------------- CART ----------------
+  final List<CartItem> _cart = <CartItem>[];
+  List<CartItem> get cart => List.unmodifiable(_cart);
+
+  Future<void> addToCart(Book b, {int qty = 1}) async {
+    final idx = _cart.indexWhere((e) => e.book.id == b.id);
+    if (idx >= 0) {
+      final item = _cart[idx];
+      _cart[idx] = item.copyWith(qty: item.qty + qty);
+    } else {
+      _cart.add(CartItem(book: b, qty: qty));
+    }
+    await ds.saveCart(_cart);
+    notifyListeners();
+  }
+
+  Future<void> addOne(Book b) => addToCart(b, qty: 1);
+
+  Future<void> incOne(String bookId) async {
+    final idx = _cart.indexWhere((e) => e.book.id == bookId);
+    if (idx >= 0) {
+      final it = _cart[idx];
+      _cart[idx] = it.copyWith(qty: it.qty + 1);
+      await ds.saveCart(_cart);
+      notifyListeners();
+    }
+  }
+
+  Future<void> decOne(String bookId) async {
+    final idx = _cart.indexWhere((e) => e.book.id == bookId);
+    if (idx >= 0) {
+      final it = _cart[idx];
+      final n = it.qty - 1;
+      if (n <= 0) {
+        _cart.removeAt(idx);
+      } else {
+        _cart[idx] = it.copyWith(qty: n);
+      }
+      await ds.saveCart(_cart);
+      notifyListeners();
+    }
+  }
+
+  Future<void> removeItem(String bookId) async {
+    _cart.removeWhere((e) => e.book.id == bookId);
+    await ds.saveCart(_cart);
+    notifyListeners();
+  }
+
+  Future<void> setCartQty(String bookId, int qty) async {
+    final idx = _cart.indexWhere((e) => e.book.id == bookId);
+    if (idx >= 0) {
+      if (qty <= 0) {
+        _cart.removeAt(idx);
+      } else {
+        _cart[idx] = _cart[idx].copyWith(qty: qty);
+      }
+      await ds.saveCart(_cart);
+      notifyListeners();
+    }
+  }
+
+  Future<void> clearCart() async {
+    _cart.clear();
+    await ds.saveCart(_cart);
+    notifyListeners();
+  }
+
+  int get cartSubtotal =>
+      _cart.fold(0, (s, it) => s + it.book.salePrice * it.qty);
+
+  // ---------------- CHECKOUT (logic trong state) ----------------
+  // Dùng: cartSubtotal + (đọc Address từ ProfileNotiState ở UI).
+  int _shippingFee = 0;
+  int get shippingFee => _shippingFee;
+  void setShippingFee(int v) {
+    _shippingFee = (v < 0) ? 0 : v;
+    notifyListeners();
+  }
+
+  String _paymentMethod = 'COD'; // ví dụ: COD | MoMo | VNPAY
+  String get paymentMethod => _paymentMethod;
+  void setPaymentMethod(String m) {
+    _paymentMethod = m;
+    notifyListeners();
+  }
+
+  int get totalPayable => cartSubtotal + _shippingFee;
+
+  // ---------------- ORDERS ----------------
+  final List<Order> _orders = <Order>[];
+  List<Order> get orders => List.unmodifiable(_orders);
+
+  Future<void> addOrder(Order o) async {
+    _orders.add(o);
+    await ds.saveOrders(_orders);
+    notifyListeners();
+  }
+
+  OrderStatus statusOf(String orderId) {
+    // Demo: giả sử tất cả đơn đều 'done'
+    return OrderStatus.done;
+  }
+
+  String methodOf(String orderId) {
+    final i = _orders.indexWhere((e) => e.id == orderId);
+    if (i >= 0) return _orders[i].method;
+    return 'COD';
+  }
+
+  // ---------------- LOAD / PERSIST ----------------
+  Future<void> loadInitial() async {
+    try {
+      // CART
+      final c = await ds.loadCart();
+      _cart
+        ..clear()
+        ..addAll(c);
+
+      // ORDERS
+      final os = await ds.loadOrders();
+      _orders
+        ..clear()
+        ..addAll(os);
 
       notifyListeners();
     } catch (_) {}

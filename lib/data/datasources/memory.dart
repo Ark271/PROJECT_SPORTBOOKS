@@ -4,7 +4,6 @@ import '../../domain/entities/entities.dart';
 class MemoryDataSource {
   // ==== Catalog demo ====
   final List<Book> _catalog = <Book>[
-    // (Giữ vài mẫu — bạn có thể thêm/bớt theo dự án)
     Book(
       id: 'b1',
       title: 'Lập Trình Flutter Cơ Bản',
@@ -47,7 +46,6 @@ class MemoryDataSource {
       description: 'Áp dụng Clean Architecture cho Flutter với ví dụ cụ thể.',
       publishedAt: DateTime.now().subtract(const Duration(days: 150)),
     ),
-    // ... (bạn có thể bổ sung thêm các nhóm Văn học/Kinh doanh)
   ];
 
   List<Book> get catalog => List.unmodifiable(_catalog);

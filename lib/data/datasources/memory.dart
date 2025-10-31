@@ -53,15 +53,15 @@ class MemoryDataSource {
   List<Book> get catalog => List.unmodifiable(_catalog);
 
   // ==== Reviews (in-memory) ====
-  final Map<String, List<Review>> _bookReviews = <String, List<Review>>{};
+  // final Map<String, List<Review>> _bookReviews = <String, List<Review>>{};
 
-  Future<List<Review>> loadReviews(String bookId) async =>
-      List<Review>.unmodifiable(_bookReviews[bookId] ?? const <Review>[]);
+  // Future<List<Review>> loadReviews(String bookId) async =>
+  //     List<Review>.unmodifiable(_bookReviews[bookId] ?? const <Review>[]);
 
-  Future<void> addReview(String bookId, Review review) async {
-    final list = _bookReviews.putIfAbsent(bookId, () => <Review>[]);
-    list.add(review); // an toàn, không dùng '!'
-  }
+  // Future<void> addReview(String bookId, Review review) async {
+  //   final list = _bookReviews.putIfAbsent(bookId, () => <Review>[]);
+  //   list.add(review); // an toàn, không dùng '!'
+  // }
 
   // ==== Cart / Wishlist / Orders (in-memory) ====
   final List<CartItem> _cart = <CartItem>[];

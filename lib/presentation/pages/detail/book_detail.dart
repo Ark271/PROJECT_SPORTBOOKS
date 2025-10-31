@@ -103,50 +103,56 @@ class BookDetailPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Review (demo từ datasource bộ nhớ)
-          FutureBuilder<List<Review>>(
-            future: _loadReviews(context, book.id),
-            builder: (context, snap) {
-              final has = snap.connectionState == ConnectionState.done &&
-                  snap.hasData &&
-                  snap.data != null;
-              final reviews =
-                  has ? (snap.data as List<Review>) : const <Review>[];
+          // FutureBuilder<List<Review>>(
+          //   future: _loadReviews(context, book.id),
+          //   builder: (context, snap) {
+          //     final has = snap.connectionState == ConnectionState.done &&
+          //         snap.hasData &&
+          //         snap.data != null;
+          //     final reviews =
+          //         has ? (snap.data as List<Review>) : const <Review>[];
 
-              if (reviews.isEmpty) {
-                return const Card(
-                  child: ListTile(
-                    leading: Icon(Icons.reviews_outlined),
-                    title: Text('Chưa có đánh giá'),
-                  ),
-                );
-              }
+          //     if (reviews.isEmpty) {
+          //       return const Card(
+          //         child: ListTile(
+          //           leading: Icon(Icons.reviews_outlined),
+          //           title: Text('Chưa có đánh giá'),
+          //         ),
+          //       );
+          //     }
 
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Đánh giá',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 8),
-                      ...reviews.map(
-                        (r) => ListTile(
-                          leading: CircleAvatar(
-                            child: Text(r.rating.toString()),
-                          ),
-                          title: Text(r.text),
-                          subtitle: Text(r.createdAt.toLocal().toString()),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+          //     return Card(
+          //       child: Padding(
+          //         padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+          //         child: Column(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             Text('Đánh giá',
+          //                 style: Theme.of(context)
+          //                     .textTheme
+          //                     .titleMedium
+          //                     ?.copyWith(fontWeight: FontWeight.w800)),
+          //             const SizedBox(height: 8),
+          //             ...reviews.map(
+          //               (r) => ListTile(
+          //                 leading: CircleAvatar(
+          //                   child: Text(r.rating.toString()),
+          //                 ),
+          //                 title: Text(r.text),
+          //                 subtitle: Text(r.createdAt.toLocal().toString()),
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       ),
+          //     );
+          //   },
+          // ),
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.reviews_outlined),
+              title: Text('Chưa có đánh giá'),
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -161,8 +167,8 @@ class BookDetailPage extends StatelessWidget {
     );
   }
 
-  Future<List<Review>> _loadReviews(BuildContext context, String bookId) async {
-    final ds = context.read<AppState>().ds;
-    return ds.loadReviews(bookId);
-  }
+  // Future<List<Review>> _loadReviews(BuildContext context, String bookId) async {
+  //   final ds = context.read<AppState>().ds;
+  //   return ds.loadReviews(bookId);
+  // }
 }
